@@ -1,0 +1,60 @@
+{
+  "name": "foundryvtt-token-story",
+  "title": "Token Story",
+  "description": "Token Story",
+  "version": "0.0.1",
+  "author": "p4535992",
+  "type": "module",
+  "socket": true,
+  "includes": [
+    "./assets/**",
+    "./lang/**",
+    "./scripts/**",
+    "./styles/**",
+    "./templates/**",
+    "./module.json",
+    "./README.md",
+    "./icons/**",
+    "./packs/**"
+  ],
+  "media": [
+    {
+      "type": "icon",
+      "location": ""
+    },
+    {
+      "type": "cover",
+      "location": ""
+    },
+    {
+      "type": "screenshot",
+      "location": ""
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "system": ["dnd5e"],
+  "scripts": ["./lib/jquery.alphabetpicker.js"],
+  "esmodules": ["foundryvtt-token-story.js"],
+  "styles": ["styles/foundryvtt-token-story.css", "styles/alphabetpicker.css"],
+  "minimumCoreVersion": "0.8.6",
+  "compatibleCoreVersion": "0.8.9",
+  "url": "https://github.com/p4535992/foundryvtt-token-story",
+  "manifest": "https://github.com/p4535992/foundryvtt-token-story/releases/latest/download/module.json",
+  "download": "https://github.com/p4535992/foundryvtt-token-story/releases/download/v0.0.1/module.zip",
+  "readme": "https://github.com/p4535992/foundryvtt-token-story/blob/v0.0.1/README.md",
+  "changelog": "https://github.com/p4535992/foundryvtt-token-story/blob/v0.0.1/changelog.md",
+  "bugs": "https://github.com/p4535992/foundryvtt-token-story/issues",
+  "allowBugReporter": true,
+  "manifestPlusVersion": "1.2.0",
+  "dependencies": [
+    {
+      "name": "lib-wrapper"
+    }
+  ]
+}
