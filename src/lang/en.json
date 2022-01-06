@@ -1,1 +1,8 @@
-{}
+{
+  "token-story.settings.permissionOnHover.name": "Required actor permission",
+  "token-story.settings.permissionOnHover.hint": "Required permission level of Actor to see handout.",
+  "token-story.settings.permissionOnHover.choice1": "None",
+  "token-story.settings.permissionOnHover.choice2": "Limited",
+  "token-story.settings.permissionOnHover.choice3": "Observer",
+  "token-story.settings.permissionOnHover.choice4": "Owner"
+}

@@ -14,21 +14,21 @@
 // Import TypeScript modules
 import { getGame, registerSettings } from './module/settings';
 import { preloadTemplates } from './module/preloadTemplates';
-import { RIDDLE_ONE_MODULE_NAME } from './module/settings';
+import { TOKEN_STORY_MODULE_NAME } from './module/settings';
 import { initHooks, readyHooks, setupHooks } from './module/Hooks';
 // import { installedModules, setupModules } from './module/setupModules';
 
 export let debugEnabled = 0;
 // 0 = none, warnings = 1, debug = 2, all = 3
 export const debug = (...args) => {
-  if (debugEnabled > 1) console.log(`DEBUG:${RIDDLE_ONE_MODULE_NAME} | `, ...args);
+  if (debugEnabled > 1) console.log(`DEBUG:${TOKEN_STORY_MODULE_NAME} | `, ...args);
 };
-export const log = (...args) => console.log(`${RIDDLE_ONE_MODULE_NAME} | `, ...args);
+export const log = (...args) => console.log(`${TOKEN_STORY_MODULE_NAME} | `, ...args);
 export const warn = (...args) => {
-  if (debugEnabled > 0) console.warn(`${RIDDLE_ONE_MODULE_NAME} | `, ...args);
+  if (debugEnabled > 0) console.warn(`${TOKEN_STORY_MODULE_NAME} | `, ...args);
 };
-export const error = (...args) => console.error(`${RIDDLE_ONE_MODULE_NAME} | `, ...args);
-export const timelog = (...args) => warn(`${RIDDLE_ONE_MODULE_NAME} | `, Date.now(), ...args);
+export const error = (...args) => console.error(`${TOKEN_STORY_MODULE_NAME} | `, ...args);
+export const timelog = (...args) => warn(`${TOKEN_STORY_MODULE_NAME} | `, Date.now(), ...args);
 
 export const i18n = (key) => {
   return getGame().i18n.localize(key);
@@ -47,7 +47,7 @@ export const setDebugLevel = (debugText: string) => {
 /* Initialize module					*/
 /* ------------------------------------ */
 Hooks.once('init', async () => {
-  console.log(`${RIDDLE_ONE_MODULE_NAME} | Initializing ${RIDDLE_ONE_MODULE_NAME}`);
+  console.log(`${TOKEN_STORY_MODULE_NAME} | Initializing ${TOKEN_STORY_MODULE_NAME}`);
 
   // Register custom module settings
   registerSettings();
