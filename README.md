@@ -1,6 +1,6 @@
 ![](https://img.shields.io/badge/Foundry-v0.8.9-informational)
 
-# Riddles one
+# Token Story
 
 XXX
 

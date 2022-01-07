@@ -7,12 +7,12 @@ export const readyHooks = async () => {
    * Add Image Hover display to html on load.
    * Note: Fix hack - reconfigure and create a new sibling to the current hud element.
    */
-  Hooks.on('renderHeadsUpDisplay', (app, html, data) => {
+  Hooks.on('renderHeadsUpDisplay', async (app, html, data) => {
     html[0].style.zIndex = 70; // Sets image to show above other UI. This is definately a hack!
     html.append(`<template id="token-story-hud"></template>`);
     //@ts-ignore
     getCanvas().hud.tokenStory = new TokenStoryHUD();
-    
+
     /**
      * renderHeadsUpDisplay is called when changing scene, use this to cache token images on the scene.
      */
@@ -33,10 +33,13 @@ export const readyHooks = async () => {
     }
 
     const actor = <Actor>getGame().user?.character;
-    const token = <Token>getCanvas().tokens?.placeables.find((token) => {
+    let token = <Token>getCanvas().tokens?.placeables.find((token) => {
       return token.document.actor?.id === actor.id;
     });
-    // const tokenPLaceable = <Token>actor?.token?.object;
+    if (!token) {
+      //@ts-ignore
+      token = await getCanvas().hud.tokenStory.createActorWithType(actor, { x: 0, y: 0 }, 'character');
+    }
     //@ts-ignore
     getCanvas().hud.tokenStory.showArtworkRequirements(token, true);
   });
@@ -44,22 +47,22 @@ export const readyHooks = async () => {
   /**
    * Cache token image upon creating a actor.
    */
-  Hooks.on('createToken', (scene, data) => {
-    const tokenId = getGame().actors?.get(data.actorId);
-    if (!tokenId) {
-      return;
-    }
-    let imageToCache = tokenId.img;
-    //@ts-ignore
-    if (imageToCache === getCanvas().hud.tokenStory.DEFAULT_TOKEN) {
-      imageToCache = data.img;
-    }
-    //@ts-ignore
-    if (imageToCache && !(imageToCache in getCanvas().hud.tokenStory.cacheImageNames)) {
-      //@ts-ignore
-      getCanvas().hud.tokenStory.cacheAvailableToken(imageToCache, false, false);
-    }
-  });
+  // Hooks.on('createToken', (scene, data) => {
+  //   const tokenId = getGame().actors?.get(data.actorId);
+  //   if (!tokenId) {
+  //     return;
+  //   }
+  //   let imageToCache = tokenId.img;
+  //   //@ts-ignore
+  //   if (imageToCache === getCanvas().hud.tokenStory.DEFAULT_TOKEN) {
+  //     imageToCache = data.img;
+  //   }
+  //   //@ts-ignore
+  //   if (imageToCache && !(imageToCache in getCanvas().hud.tokenStory.cacheImageNames)) {
+  //     //@ts-ignore
+  //     getCanvas().hud.tokenStory.cacheAvailableToken(imageToCache, false, false);
+  //   }
+  // });
 
   // /**
   //  * Display image when user hovers mouse over a actor
@@ -105,26 +108,26 @@ export const readyHooks = async () => {
   /**
    * Remove character art when deleting/dragging token (Hover hook doesn't trigger while token movement animation is on).
    */
-  Hooks.on('preUpdateToken', (...args) => {
-    //@ts-ignore
-    getCanvas().hud.tokenStory.clear();
-  });
-  Hooks.on('deleteToken', (...args) => {
-    //@ts-ignore
-    getCanvas().hud.tokenStory.clear();
-  });
+  // Hooks.on('preUpdateToken', (...args) => {
+  //   //@ts-ignore
+  //   getCanvas().hud.tokenStory.clear();
+  // });
+  // Hooks.on('deleteToken', (...args) => {
+  //   //@ts-ignore
+  //   getCanvas().hud.tokenStory.clear();
+  // });
 
   /**
    * Occasions to remove character art from screen due to weird hover hook interaction.
    */
-  Hooks.on('closeActorSheet', (...args) => {
-    //@ts-ignore
-    getCanvas().hud.tokenStory.clear();
-  });
-  Hooks.on('closeSettingsConfig', (...args) => {
-    //@ts-ignore
-    getCanvas().hud.tokenStory.clear();
-  });
+  // Hooks.on('closeActorSheet', (...args) => {
+  //   //@ts-ignore
+  //   getCanvas().hud.tokenStory.clear();
+  // });
+  // Hooks.on('closeSettingsConfig', (...args) => {
+  //   //@ts-ignore
+  //   getCanvas().hud.tokenStory.clear();
+  // });
   Hooks.on('closeApplication', (...args) => {
     //@ts-ignore
     getCanvas().hud.tokenStory.clear();
@@ -136,8 +139,12 @@ export const readyHooks = async () => {
   Hooks.on('canvasPan', (...args) => {
     //@ts-ignore
     if (typeof getCanvas().hud.tokenStory !== 'undefined') {
-      //@ts-ignore
-      if (typeof getCanvas().hud.tokenStory.object === 'undefined' || getCanvas().hud.tokenStory.object === null) {
+      if (
+        //@ts-ignore
+        typeof getCanvas().hud.tokenStory.object === 'undefined' ||
+        //@ts-ignore
+        getCanvas().hud.tokenStory.object === null
+      ) {
         return;
       }
       //@ts-ignore

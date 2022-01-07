@@ -1,3 +1,7 @@
+import {
+  TokenData,
+  ActorData,
+} from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 import { getCanvas, getGame, TOKEN_STORY_MODULE_NAME } from './settings';
 import { TokenStory } from './token-story';
 
@@ -64,6 +68,7 @@ export class TokenStoryHUD extends BasePlaceableHUD {
       // If no character art exists, use token art instead.
       image = <string>tokenObject.data.img;
     }
+    data.id = tokenObject.id;
     data.url = image;
     const fileExt = this.fileExtention(image);
     if (this.videoFileExtentions.includes(fileExt)) data.isVideo = true; // if the file is not a image, we want to use the video html tag
@@ -73,8 +78,17 @@ export class TokenStoryHUD extends BasePlaceableHUD {
   activateListeners(html) {
     super.activateListeners(html);
 
-    //html.find('.token-story-hud').click(ev => this._click());
+    html.find('.token-story-hud-click').click((ev) => this._clickImage(ev));
     //html.find('[data-toggle="tooltip"]').tooltip();
+  }
+
+  _clickImage(ev) {
+    const token = ev as Token;
+    if (<number>getCanvas().tokens?.controlled.length > 0) {
+      getCanvas().tokens?.controlled.splice(0, 0, token);
+    } else {
+      getCanvas().tokens?.controlled.push(token);
+    }
   }
 
   /**
@@ -182,7 +196,7 @@ export class TokenStoryHUD extends BasePlaceableHUD {
    * @param {Number} imageWidthScaled width of image related to screen size (pixels)
    * @param {Number} center Middle of the screen with scaling (pixels)
    */
-  applyToCanvas(url, imageWidthScaled, center) {
+  async applyToCanvas(url, imageWidthScaled, center) {
     const imageWidth = this.cacheImageNames[url].width; //width of original image
     const imageHeight = this.cacheImageNames[url].height; //height of original image
     const [xAxis, yAxis] = this.changePosition(imageWidth, imageHeight, imageWidthScaled, center); // move image to correct verticle position.
@@ -193,6 +207,21 @@ export class TokenStoryHUD extends BasePlaceableHUD {
       top: yAxis,
     };
     this.element.css(position); // Apply CSS to element
+
+    // ADD 4535992
+
+    // await (<Token>this.object).document.update({
+    //   x: xAxis,
+    //   y: yAxis,
+    // });
+
+    // await (<Token>this.object).update(
+    //   {
+    //     x: xAxis,
+    //     y: yAxis
+    //   },
+    //   undefined,
+    // );
   }
 
   /**
@@ -239,7 +268,7 @@ export class TokenStoryHUD extends BasePlaceableHUD {
    * @param {*} token token passed in
    * @param {Boolean} hovered if token is mouseovered
    */
-  showArtworkRequirements(token:Token, hovered) {
+  showArtworkRequirements(token: Token, hovered) {
     /**
      * check token is actor, module is enabled, user has permissions to see character art
      */
@@ -247,7 +276,7 @@ export class TokenStoryHUD extends BasePlaceableHUD {
       !token ||
       !token.actor ||
       this.imageHoverActive === false ||
-      (token.actor.permission < this.actorRequirementSetting && 
+      (token.actor.permission < this.actorRequirementSetting &&
         //@ts-ignore
         token.actor.data.permission['default'] !== -1)
     ) {
@@ -260,5 +289,73 @@ export class TokenStoryHUD extends BasePlaceableHUD {
     } else {
       this.clear();
     }
+  }
+
+  /**
+   * actor: Actor, di solito quello collegato al player `game.user.character`
+   * data : {x, y} , le coordinate dove costruire il token
+   * type : string , di solito `character` ,lista dei tipi accettati da Dnd5e [actorless,character,npc,vehicle]
+   */
+  async createActorWithType(actor: Actor, data: { x; y }, type: string):Promise<Token|undefined> {
+    let createdType = type;
+    if (type === 'actorless') {
+      createdType = Object.keys(CONFIG.Actor.sheetClasses)[0];
+    }
+
+    // let actorName = data.name;
+    // if (actorName.includes('.')) {
+    //   actorName = actorName.split('.')[0];
+    // }
+
+    //const actor = await Actor.create(
+    //{
+    //   name: actorName,
+    //    type: createdType,
+    //    img: data.img
+    //});
+    const actorData = <any>foundry.utils.duplicate(actor.data);
+
+    // Prepare Token data specific to this placement
+    const td = actor.data.token;
+    const hg = <number>getCanvas().dimensions?.size / 2;
+    data.x -= td.width * hg;
+    data.y -= td.height * hg;
+
+    // Snap the dropped position and validate that it is in-bounds
+    // NOTE THE HIDDEN
+    const tokenData = { x: data.x, y: data.y, hidden: true, img: actor.data.img };
+    // Snap to grid
+    foundry.utils.mergeObject(tokenData, getCanvas().grid?.getSnappedPosition(data.x, data.y, 1));
+    if (!getCanvas().grid?.hitArea.contains(tokenData.x, tokenData.y)) {
+      return undefined;
+    }
+    // Get the Token image
+    // if ( actorData.token.randomImg ) {
+    //     let images = await actor.getTokenImages();
+    //     images = images.filter(i => (images.length === 1) || !(i === this._lastWildcard));
+    //     const image = images[Math.floor(Math.random() * images.length)];
+    //     tokenData.img = this._lastWildcard = image;
+    // }
+
+    // Merge Token data with the default for the Actor
+    const tokenData2 = <TokenData>foundry.utils.mergeObject(actorData.token, tokenData, { inplace: true });
+    tokenData2.actorId = actor.data._id;
+    tokenData2.actorLink = true;
+
+    // Submit the Token creation request and activate the Tokens layer (if not already active)
+    getCanvas().getLayerByEmbeddedName('Token')?.activate();
+    //@ts-ignore
+    await getCanvas().scene?.createEmbeddedDocuments('Token', [tokenData2], {});
+
+    // delete actor if it's actorless
+    if (type === 'actorless') {
+      actor.delete();
+    }
+
+    const token = <Token>getCanvas().tokens?.placeables.find((token) => {
+      return token.document.actor?.id === actor.id;
+    });
+    
+    return token;
   }
 }

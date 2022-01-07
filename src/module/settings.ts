@@ -9,7 +9,7 @@ export const TOKEN_STORY_MODULE_NAME = 'token-story';
  * So you will need to deal with the fact that there might not be an initialized canvas at any point in time.
  * @returns
  */
- export function getCanvas(): Canvas {
+export function getCanvas(): Canvas {
   if (!(canvas instanceof Canvas) || !canvas.ready) {
     throw new Error('Canvas Is Not Initialized');
   }
@@ -132,7 +132,7 @@ export const registerSettings = function () {
       max: 20,
       step: 0.5,
     },
-    default: 7, // Default Value
+    default: 15, // Default Value
     type: Number, // Value type
   });
 };
